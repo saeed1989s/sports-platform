@@ -4,15 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>پلتفرم ورزشی</title>
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+</head>
+<body>
+  <h1 style="text-align:center;margin-top:2rem">پلتفرم ورزشی - نسخه نهایی</h1>
+  <p style="text-align:center">تمام فرم‌ها و قابلیت‌ها اینجا بارگذاری خواهند شد...</p>
 
-  <!-- فایل manifest برای PWA -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
-
-  <!-- Service Worker ثبت -->
+  <!-- جاوااسکریپت ثبت Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -21,78 +23,6 @@
           .catch(err => console.error("SW registration failed", err));
       });
     }
-  </script>
-
-  <!-- اتصال WebSocket برای اعلان‌های لحظه‌ای -->
-  <script>
-    const socket = new WebSocket("ws://localhost:5000");
-    socket.onmessage = function (event) {
-      const message = JSON.parse(event.data);
-      if (message.type === "notification") {
-        const list = document.getElementById("notifications");
-        const li = document.createElement("li");
-        li.textContent = message.message;
-        list.prepend(li);
-      }
-    };
-  </script>
-</head>
-<body>
-  <!-- صفحه آفلاین برای PWA -->
-  <div id="offline-warning" class="fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded hidden shadow-lg">
-    اتصال اینترنت قطع شده است. برخی امکانات غیرفعال هستند.
-  </div>
-
-  <script>
-    window.addEventListener("offline", () => {
-      document.getElementById("offline-warning").classList.remove("hidden");
-    });
-    window.addEventListener("online", () => {
-      document.getElementById("offline-warning").classList.add("hidden");
-    });
-  </script>
-
-  <!-- پنل مدیریت ادمین -->
-  <div class="max-w-6xl mx-auto mt-10 p-6 border rounded-xl shadow bg-white">
-    <h2 class="text-2xl font-bold mb-4 text-center">پنل مدیریت</h2>
-    <div id="admin-panel" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="p-4 border rounded shadow">
-        <h3 class="font-semibold">کاربران ثبت‌نام‌شده</h3>
-        <p id="admin-users-count">--</p>
-      </div>
-      <div class="p-4 border rounded shadow">
-        <h3 class="font-semibold">برنامه‌های فعال</h3>
-        <p id="admin-programs-count">--</p>
-      </div>
-      <div class="p-4 border rounded shadow">
-        <h3 class="font-semibold">گزارش‌های پشتیبانی</h3>
-        <ul id="admin-reports" class="list-disc pl-4 mt-2 space-y-1"></ul>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    async function loadAdminPanel() {
-      const token = localStorage.getItem("token");
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      if (payload.role !== "admin") return;
-
-      const res = await fetch("http://localhost:5000/api/admin/overview", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const data = await res.json();
-      document.getElementById("admin-users-count").textContent = data.users_count;
-      document.getElementById("admin-programs-count").textContent = data.programs_count;
-
-      const reportsList = document.getElementById("admin-reports");
-      data.reports.forEach(rep => {
-        const li = document.createElement("li");
-        li.textContent = rep;
-        reportsList.appendChild(li);
-      });
-    }
-    window.addEventListener("load", loadAdminPanel);
   </script>
 </body>
 </html>
